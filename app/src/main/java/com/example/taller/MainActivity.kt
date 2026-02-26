@@ -3,20 +3,34 @@ package com.example.taller
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.example.taller.ui.theme.TallerTheme
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlin.math.abs
+
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            PuzzleScreen()
+            Surface(
+                modifier = Modifier.fillMaxSize(),
+                color = MaterialTheme.colorScheme.background
+            ) {
+                PuzzleScreen()
+            }
         }
     }
 }
@@ -51,6 +65,7 @@ class PuzzleViewModel : ViewModel() {
             newBoard[i2] = temp
             board = newBoard
             moves++
+            goal = calculateGoal(board)
         }
     }
 
@@ -65,7 +80,7 @@ class PuzzleViewModel : ViewModel() {
     }
 
     fun isSolved(): Boolean {
-        return board == listOf(1,2,3,4,5,6,7,8,9)
+        return board == listOf(1, 2, 3, 4, 5, 6, 7, 8, 9)
     }
 
     private fun calculateGoal(board: List<Int>): Int {
@@ -93,7 +108,9 @@ fun PuzzleScreen(vm: PuzzleViewModel = viewModel()) {
     val solved = vm.isSolved()
 
     Column(
-        modifier = Modifier.fillMaxSize().padding(16.dp),
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
@@ -106,11 +123,12 @@ fun PuzzleScreen(vm: PuzzleViewModel = viewModel()) {
             modifier = Modifier.size(300.dp)
         ) {
             itemsIndexed(board) { index, number ->
+                val isSelected = vm.selectedIndex == index
                 Box(
                     modifier = Modifier
                         .padding(4.dp)
-                        .background(Color.LightGray)
-                        .fillMaxSize()
+                        .aspectRatio(1f)
+                        .background(if (isSelected) Color.Yellow else Color.LightGray)
                         .clickable { vm.selectCell(index) },
                     contentAlignment = Alignment.Center
                 ) {
