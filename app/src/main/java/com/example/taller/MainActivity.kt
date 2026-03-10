@@ -128,7 +128,7 @@ fun PuzzleScreen(vm: PuzzleViewModel = viewModel()) {
                     modifier = Modifier
                         .padding(4.dp)
                         .aspectRatio(1f)
-                        .background(if (isSelected) Color.Yellow else Color.LightGray)
+                        .background(if (isSelected) Color.Blue else Color.LightGray)
                         .clickable { vm.selectCell(index) },
                     contentAlignment = Alignment.Center
                 ) {
