@@ -21,74 +21,96 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlin.math.abs
 
+/**
+ * 1. ACTIVIDAD PRINCIPAL
+ * Es la ventana que Android abre al tocar el icono de la app.
+ */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            Surface(
-                modifier = Modifier.fillMaxSize(),
-                color = MaterialTheme.colorScheme.background
-            ) {
-                PuzzleScreen()
+            // MaterialTheme aplica los colores y estilos por defecto
+            MaterialTheme {
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    PuzzleScreen()
+                }
             }
         }
     }
 }
 
+/**
+ * 2. VIEWMODEL (Lógica y Datos)
+ * Aquí reside toda la "inteligencia" del juego.
+ */
 class PuzzleViewModel : ViewModel() {
 
+    // El tablero es una lista de 1 al 9 mezclada aleatoriamente
     var board by mutableStateOf((1..9).shuffled())
         private set
 
-    var moves by mutableStateOf(0)
+    var moves by mutableIntStateOf(0)
         private set
 
-    var goal by mutableStateOf(calculateGoal(board))
+    var goal by mutableIntStateOf(calculateGoal(board))
         private set
 
     var selectedIndex by mutableStateOf<Int?>(null)
 
+    /**
+     * Gestiona qué sucede cuando el usuario toca una celda.
+     */
     fun selectCell(index: Int) {
-        if (selectedIndex == null) {
+        val currentSelection = selectedIndex
+        if (currentSelection == null) {
+            // Primer toque: seleccionamos la celda
             selectedIndex = index
         } else {
-            move(selectedIndex!!, index)
-            selectedIndex = null
+            // Segundo toque: intentamos mover
+            move(currentSelection, index)
+            selectedIndex = null // Limpiamos selección tras el intento
         }
     }
 
+    /**
+     * Intercambia dos piezas si son vecinas (arriba, abajo, izq, der).
+     */
     private fun move(i1: Int, i2: Int) {
         if (isAdjacent(i1, i2)) {
             val newBoard = board.toMutableList()
             val temp = newBoard[i1]
             newBoard[i1] = newBoard[i2]
             newBoard[i2] = temp
+            
             board = newBoard
             moves++
             goal = calculateGoal(board)
         }
     }
 
+    /**
+     * Cálculo matemático para saber si dos celdas son vecinas en una rejilla 3x3.
+     */
     private fun isAdjacent(i1: Int, i2: Int): Boolean {
-        val r1 = i1 / 3
-        val c1 = i1 % 3
-        val r2 = i2 / 3
-        val c2 = i2 % 3
-
-        return (r1 == r2 && abs(c1 - c2) == 1) ||
-                (c1 == c2 && abs(r1 - r2) == 1)
+        val row1 = i1 / 3; val col1 = i1 % 3
+        val row2 = i2 / 3; val col2 = i2 % 3
+        return (row1 == row2 && abs(col1 - col2) == 1) || 
+               (col1 == col2 && abs(row1 - row2) == 1)
     }
 
-    fun isSolved(): Boolean {
-        return board == listOf(1, 2, 3, 4, 5, 6, 7, 8, 9)
-    }
+    /**
+     * El juego se gana cuando la lista es exactamente [1, 2, 3, 4, 5, 6, 7, 8, 9]
+     */
+    fun isSolved(): Boolean = board == (1..9).toList()
 
-    private fun calculateGoal(board: List<Int>): Int {
-        var misplaced = 0
-        for (i in board.indices) {
-            if (board[i] != i + 1) misplaced++
-        }
-        return misplaced
+    /**
+     * Calcula cuántas piezas NO están en su lugar correcto.
+     */
+    private fun calculateGoal(currentBoard: List<Int>): Int {
+        return currentBoard.indices.count { currentBoard[it] != it + 1 }
     }
 
     fun resetGame() {
@@ -99,69 +121,100 @@ class PuzzleViewModel : ViewModel() {
     }
 }
 
+/**
+ * 3. INTERFAZ (UI)
+ * Define cómo se ven los datos en la pantalla.
+ */
 @Composable
 fun PuzzleScreen(vm: PuzzleViewModel = viewModel()) {
-
-    val board = vm.board
-    val moves = vm.moves
-    val goal = vm.goal
-    val solved = vm.isSolved()
+    val isSolved = vm.isSolved()
 
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Text(
+            text = "Puzzle de Números",
+            fontSize = 28.sp,
+            fontWeight = FontWeight.ExtraBold,
+            color = MaterialTheme.colorScheme.primary
+        )
 
-        Text("Puzzle Deslizante", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(24.dp))
 
-        Spacer(modifier = Modifier.height(16.dp))
-
+        // Genera la cuadrícula de 3x3 de forma automática
         LazyVerticalGrid(
             columns = GridCells.Fixed(3),
-            modifier = Modifier.size(300.dp)
+            modifier = Modifier
+                .size(300.dp)
+                .background(Color.DarkGray, shape = MaterialTheme.shapes.medium)
+                .padding(8.dp)
         ) {
-            itemsIndexed(board) { index, number ->
+            itemsIndexed(vm.board) { index, number ->
                 val isSelected = vm.selectedIndex == index
-                Box(
+                
+                Card(
                     modifier = Modifier
                         .padding(4.dp)
                         .aspectRatio(1f)
-                        .background(if (isSelected) Color.Yellow else Color.LightGray)
                         .clickable { vm.selectCell(index) },
-                    contentAlignment = Alignment.Center
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (isSelected) Color(0xFFFFD700) else Color.White
+                    ),
+                    elevation = CardDefaults.cardElevation(4.dp)
                 ) {
-                    Text(number.toString(), fontSize = 24.sp)
+                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                        Text(
+                            text = number.toString(),
+                            fontSize = 24.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.Black
+                        )
+                    }
                 }
             }
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(32.dp))
 
-        Text("Movimientos: $moves")
-        Text("Meta mínima sugerida: $goal")
+        // Estadísticas del juego
+        Row(horizontalArrangement = Arrangement.SpaceEvenly, modifier = Modifier.fillMaxWidth()) {
+            StatItem(label = "Movimientos", value = vm.moves.toString())
+            StatItem(label = "Meta (Piezas fuera)", value = vm.goal.toString())
+        }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(24.dp))
 
-        if (solved) {
-            val resultMessage = when {
-                moves == goal -> "Igualó la meta"
-                moves <= goal + 3 -> "Estuvo cerca"
-                else -> "Superó ampliamente la meta"
-            }
-
+        if (isSolved) {
             Text(
-                "¡Victoria! $resultMessage",
-                color = Color.Green,
-                fontWeight = FontWeight.Bold
+                "¡FELICIDADES! HAS GANADO",
+                color = Color(0xFF2E7D32),
+                fontWeight = FontWeight.Black,
+                fontSize = 20.sp
             )
         }
 
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.weight(1f))
 
-        Button(onClick = { vm.resetGame() }) {
-            Text("Reiniciar")
+        Button(
+            onClick = { vm.resetGame() },
+            modifier = Modifier.fillMaxWidth(),
+            shape = MaterialTheme.shapes.medium
+        ) {
+            Text("REINICIAR JUEGO", fontWeight = FontWeight.Bold)
         }
+    }
+}
+
+/**
+ * Componente visual pequeño para mostrar estadísticas.
+ */
+@Composable
+fun StatItem(label: String, value: String) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(label, fontSize = 12.sp, color = Color.Gray)
+        Text(value, fontSize = 20.sp, fontWeight = FontWeight.Bold)
     }
 }
