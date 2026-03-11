@@ -4,7 +4,7 @@ Este proyecto es una aplicación Android moderna desarrollada con **Jetpack Comp
 
 ---
 
-## 📂 Estructura de Archivos y Directorios
+## Estructura de Archivos y Directorios
 
 ### 1. Configuración del Proyecto (Gradle)
 *   **`build.gradle.kts` (Raíz):** Define los plugins globales (Android, Kotlin, Compose).
@@ -19,7 +19,7 @@ Este proyecto es una aplicación Android moderna desarrollada con **Jetpack Comp
 
 ---
 
-## 🛠️ Dependencias Utilizadas
+##  Dependencias Utilizadas
 
 | Librería | Propósito |
 | :--- | :--- |
@@ -30,7 +30,7 @@ Este proyecto es una aplicación Android moderna desarrollada con **Jetpack Comp
 
 ---
 
-## 🧠 Lógica y Funciones (ViewModel)
+##  Lógica y Funciones (ViewModel)
 
 La clase `PuzzleViewModel` actúa como el "cerebro" del juego:
 
@@ -44,7 +44,7 @@ La clase `PuzzleViewModel` actúa como el "cerebro" del juego:
 
 ---
 
-## 🎨 Interfaz de Usuario (UI)
+##  Interfaz de Usuario (UI)
 
 La interfaz se construye con funciones `@Composable`:
 
@@ -55,7 +55,7 @@ La interfaz se construye con funciones `@Composable`:
 
 ---
 
-## 🚀 ¿Cómo se hizo? (Proceso de Desarrollo)
+##  ¿Cómo se hizo? (Proceso de Desarrollo)
 
 1.  **Arquitectura MVVM**: Se separó la lógica (ViewModel) de la vista (Compose) para que el código sea limpio y escalable.
 2.  **Estados Reactivos**: Se utilizó el sistema de estados de Compose para que el desarrollador no tenga que "avisar" a la pantalla que debe actualizarse; ella lo hace sola cuando los datos cambian.
